@@ -276,6 +276,7 @@ python scripts/apply_sync.py --project 149
 | `python scripts/fill_resources_final.py` | Заполнение ресурсов в БД |
 | `python init_db.py` | Инициализация базы данных |
 
+```
 ## Запуск проекта Project Dashboard
 
 # 1. Клонируем репозиторий
@@ -300,7 +301,7 @@ python init_db.py
 python app.py
 
 ### 7. Открыть в браузере
-```
+
 http://localhost:8080
 ```
 
