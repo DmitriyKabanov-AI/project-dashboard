@@ -1,0 +1,27 @@
+# Secrets (пароли, ключи)
+.env
+
+# Python кэш
+__pycache__/
+*.pyc
+*.pyo
+
+# Логи и временные данные
+logs/
+sync_exports/pending_sync.json
+
+# Файлы проектов (XML, MPP) — у каждого свои
+data/*.xml
+data/*.mpp
+
+# Виртуальное окружение
+venv/
+env/
+
+# Настройки редакторов
+.vscode/
+.idea/
+
+# Системные файлы
+Thumbs.db
+.DS_Store

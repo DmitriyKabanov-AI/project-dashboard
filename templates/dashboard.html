@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        /* ... все стили остаются без изменений ... */
+        :root {
+            --bg-primary:#fff; --bg-secondary:#f8fafc; --bg-page:#f1f5f9;
+            --border-color:#e2e8f0; --text-primary:#0f172a; --text-secondary:#64748b;
+            --text-muted:#94a3b8; --accent:#2563eb; --accent-light:#dbeafe;
+            --accent-hover:#1d4ed8; --success:#16a34a; --success-light:#dcfce7;
+            --warning:#f59e0b; --warning-light:#fef3c7; --danger:#dc2626;
+            --danger-light:#fee2e2;
+            --shadow-sm:0 1px 2px rgba(0,0,0,0.04);
+            --shadow:0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md:0 4px 6px -1px rgba(0,0,0,0.07);
+            --shadow-lg:0 10px 15px -3px rgba(0,0,0,0.08);
+            --radius:10px; --radius-sm:6px; --radius-lg:14px;
+        }
+        *{box-sizing:border-box;}
+        body{background:var(--bg-page); font-family:'Inter',sans-serif; color:var(--text-primary); margin:0;}
+        .app-header{background:var(--bg-primary); border-bottom:1px solid var(--border-color); padding:0 24px; height:64px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:var(--shadow-sm);}
+        .brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:18px; text-decoration:none; color:var(--text-primary);}
+        .logo-icon{width:36px; height:36px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px;}
+        .header-controls{display:flex; align-items:center; gap:16px;}
+        .user-info{display:flex; align-items:center; gap:10px; background:var(--bg-secondary); padding:6px 14px; border-radius:8px; font-size:13px;}
+        .user-info .role-badge{background:var(--accent); color:#fff; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:600; text-transform:uppercase;}
+        .user-info .role-badge.controller{background:var(--warning);}
+        .user-info .role-badge.gip{background:#7c3aed;}
+        .btn-logout, .btn-metrics{background:transparent; border:1px solid var(--border-color); padding:6px 12px; border-radius:6px; font-size:13px; color:var(--text-secondary); cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:6px;}
+        .btn-logout:hover{background:var(--danger); color:#fff; border-color:var(--danger);}
+        .btn-metrics:hover{background:var(--accent); color:#fff; border-color:var(--accent);}
+        .pending-badge{background:var(--danger); color:#fff; font-size:11px; font-weight:600; padding:1px 6px; border-radius:10px; margin-left:4px; display:none;}
+        .pending-badge.visible{display:inline;}
+        .app-content{max-width:1440px; margin:0 auto; padding:24px;}
+        .stats-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px;}
+        .stat-card{background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius); padding:20px; display:flex; align-items:center; gap:16px; box-shadow:var(--shadow-sm);}
+        .stat-icon{width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px;}
+        .stat-icon.blue{background:var(--accent-light); color:var(--accent);}
+        .stat-icon.green{background:var(--success-light); color:var(--success);}
+        .stat-icon.yellow{background:var(--warning-light); color:var(--warning);}
+        .stat-icon.red{background:var(--danger-light); color:var(--danger);}
+        .stat-value{font-size:24px; font-weight:700;}
+        .stat-label{font-size:13px; color:var(--text-secondary);}
+        .filter-panel{background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius); padding:20px 24px; margin-bottom:20px; box-shadow:var(--shadow-sm);}
+        .filter-title{font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted); margin-bottom:14px;}
+        .filter-grid{display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:12px; align-items:end;}
+        @media(max-width:992px){.filter-grid{grid-template-columns:1fr 1fr;}}
+        .form-label{font-size:13px; font-weight:500; color:var(--text-secondary); margin-bottom:4px;}
+        .form-select, .form-control{border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:8px 12px; font-size:14px; background:var(--bg-primary);}
+        .form-select:focus, .form-control:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(37,99,235,.12); outline:none;}
+        .btn-primary-custom{background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); padding:9px 20px; font-size:14px; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
+        .btn-primary-custom:hover{background:var(--accent-hover); color:#fff;}
+        .btn-ghost{background:transparent; color:var(--text-secondary); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:8px 16px; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
+        .btn-ghost:hover{background:var(--bg-secondary); color:var(--text-primary);}
+        .btn-success-custom{background:var(--success); color:#fff; border:none; border-radius:var(--radius-sm); padding:9px 20px; font-size:14px; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
+        .btn-danger-custom{background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:var(--radius-sm); padding:9px 20px; font-size:14px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;}
+        .btn-danger-custom:hover{background:var(--danger); color:#fff;}
+        .btn-warning-custom {
+            background: #f59e0b;
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 9px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-warning-custom:hover { background: #d97706; }
+        .search-bar{position:relative; margin-bottom:16px;}
+        .search-bar input{width:100%; padding:10px 14px 10px 40px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:14px;}
+        .search-icon{position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted);}
+        .table-card{background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm);}
+        .table-card-header{padding:16px 24px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;}
+        .title{font-size:16px; font-weight:600;}
+        .count-badge{background:var(--bg-secondary); color:var(--text-secondary); font-size:12px; padding:2px 10px; border-radius:20px;}
+        .data-table{width:100%; border-collapse:collapse;}
+        .data-table thead th{background:var(--bg-secondary); color:var(--text-secondary); font-size:12px; font-weight:600; text-transform:uppercase; padding:12px 16px; border-bottom:1px solid var(--border-color); text-align:left; position:sticky; top:0; z-index:1;}
+        .data-table tbody tr:hover{background:#f8faff;}
+        .data-table tbody td{padding:12px 16px; font-size:13px; border-bottom:1px solid var(--border-color);}
+        .task-name-cell{font-weight:500; max-width:320px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+        .mono-cell{font-family:Consolas,monospace; font-size:12px; color:var(--text-secondary);}
+        .progress-cell{min-width:110px;}
+        .progress-mini{display:flex; align-items:center; gap:8px;}
+        .progress-track{flex:1; height:6px; background:var(--bg-page); border-radius:3px; overflow:hidden;}
+        .progress-fill{height:100%; border-radius:3px;}
+        .progress-fill.low{background:var(--danger);}
+        .progress-fill.mid{background:var(--warning);}
+        .progress-fill.high{background:var(--success);}
+        .progress-fill.complete{background:var(--accent);}
+        .progress-value{font-size:12px; font-weight:600; min-width:32px; text-align:right;}
+        .action-btn{width:32px; height:32px; border:1px solid var(--border-color); border-radius:6px; background:var(--bg-primary); color:var(--text-secondary); display:inline-flex; align-items:center; justify-content:center; cursor:pointer;}
+        .action-btn:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-light);}
+        .resource-tag{display:inline-block; background:var(--bg-secondary); color:var(--text-secondary); font-size:11px; padding:2px 8px; border-radius:4px; margin:1px 2px; border:1px solid var(--border-color);}
+        .status-badge{display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px;}
+        .status-badge.pending{background:var(--warning-light); color:#92400e;}
+        .status-badge.approved{background:var(--success-light); color:#166534;}
+        .status-badge.rejected{background:var(--danger-light); color:#991b1b;}
+        .empty-state{text-align:center; padding:60px 24px;}
+        .empty-icon{font-size:48px; color:var(--text-muted); margin-bottom:12px;}
+        .modal-content{border:none; border-radius:var(--radius-lg); box-shadow:var(--shadow-lg);}
+        .modal-header{border-bottom:1px solid var(--border-color); padding:20px 24px;}
+        .modal-title{font-size:18px; font-weight:600;}
+        .modal-body{padding:24px;}
+        .modal-footer{border-top:1px solid var(--border-color); padding:16px 24px;}
+        .modal-section{margin-bottom:20px;}
+        .modal-section-title{font-size:12px; font-weight:600; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px;}
+        .info-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+        .info-label{font-size:12px; color:var(--text-muted);}
+        .info-value{font-size:14px; font-weight:500;}
+        .comment-item{background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px 14px; margin-bottom:8px;}
+        .comment-meta{font-size:11px; color:var(--text-muted); margin-bottom:4px;}
+        .comment-text{font-size:13px;}
+        .history-item{display:flex; gap:10px; padding:8px 0; border-bottom:1px solid var(--border-color); font-size:13px;}
+        .toast-container{position:fixed; top:80px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px;}
+        .toast-item{background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:14px 20px; box-shadow:var(--shadow-lg); display:flex; align-items:center; gap:10px; min-width:320px; animation:slideIn .3s ease; font-size:14px;}
+        .toast-item.success{border-left:3px solid var(--success);}
+        .toast-item.error{border-left:3px solid var(--danger);}
+        .toast-item.info{border-left:3px solid var(--accent);}
+        @keyframes slideIn{from{opacity:0; transform:translateX(40px);} to{opacity:1; transform:translateX(0);}}
+        @keyframes slideOut{from{opacity:1;} to{opacity:0; transform:translateX(40px);}}
+        .spinner{display:inline-block; width:18px; height:18px; border:2px solid var(--border-color); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite;}
+        @keyframes spin{to{transform:rotate(360deg);}}
+        .logs-panel{background:var(--bg-primary); border:1px solid var(--border-color); border-radius:var(--radius); margin-top:24px; box-shadow:var(--shadow-sm);}
+        .logs-header{padding:16px 24px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;}
+        .logs-list{max-height:400px; overflow-y:auto;}
+        .log-entry{padding:10px 24px; border-bottom:1px solid var(--border-color); font-size:13px; display:flex; gap:12px;}
+        .log-time{color:var(--text-muted); font-size:12px; min-width:140px;}
+        .tab-nav{display:flex; border-bottom:2px solid var(--border-color); margin-bottom:16px;}
+        .tab-btn{padding:8px 16px; border:none; background:transparent; color:var(--text-secondary); font-size:13px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px;}
+        .tab-btn.active{color:var(--accent); border-bottom-color:var(--accent);}
+        .tab-content{display:none;}
+        .tab-content.active{display:block;}
+        .table-scroll{max-height:65vh; overflow-y:auto;}
+        .ol-value{display:inline-block; background:var(--accent-light); color:var(--accent); font-size:12px; font-weight:600; padding:2px 8px; border-radius:4px;}
+        .ol-value.empty{background:var(--bg-secondary); color:var(--text-muted);}
+        .btn-delete{background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:var(--radius-sm); padding:4px 8px; font-size:12px; cursor:pointer;}
+        .btn-delete:hover{background:var(--danger); color:#fff;}
+        .clickable-row{cursor:pointer;}
+        .gip-note-cell{max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-secondary);}
+        .metrics-pre{background:#0f172a; color:#e2e8f0; padding:16px; border-radius:8px; font-family:Consolas,monospace; font-size:12px; max-height:500px; overflow:auto; white-space:pre-wrap;}
+
+        /* ИЗМЕНЕНИЕ: Стили для древовидного отображения задач (только исполнитель) */
+        .tree-row.tree-hidden { display: none; }
+        .tree-summary-row td { font-weight: 600; background: var(--bg-secondary); }
+        .tree-summary-row:hover td { background: #eef2ff; }
+        .tree-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            text-align: center;
+            cursor: pointer;
+            color: var(--accent);
+            font-size: 11px;
+            margin-right: 4px;
+            user-select: none;
+            border-radius: 4px;
+            transition: background .15s;
+        }
+        .tree-toggle:hover { background: var(--accent-light); }
+        .tree-indent { display: inline-block; }
+        #treeViewContainer .task-name-cell {
+            white-space: normal;
+            word-break: break-word;
+            max-width: 400px;
+        }
+        .tree-project-sep td {
+            background: var(--accent-light) !important;
+            font-weight: 700;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 10px 16px;
+        }
+        .tree-project-sep:hover td { background: #c7d2fe !important; }
+        .tree-view-toggle-group {
+            display: inline-flex;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-left: 12px;
+        }
+        .tree-view-toggle-btn {
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            border: none;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .tree-view-toggle-btn:not(:last-child) { border-right: 1px solid var(--border-color); }
+        .tree-view-toggle-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+        .tree-view-toggle-btn:hover:not(.active) { background: var(--bg-secondary); }
+    </style>
+</head>
+<body data-role="{{ user_role }}" data-username="{{ username }}">
+<header class="app-header">
+    <a class="brand" href="/">
+        <div class="logo-icon"><i class="bi bi-bar-chart-steps"></i></div>
+        Project Dashboard
+    </a>
+    <div class="header-controls">
+        <div class="user-info">
+            <i class="bi bi-person-circle"></i>
+            <strong>{{ username }}</strong>
+            <span class="role-badge {{ user_role }}">
+                {% if user_role == 'executor' %}Исполнитель
+                {% elif user_role == 'controller' %}Контролёр
+                {% elif user_role == 'gip' %}ГИП
+                {% else %}{{ user_role }}{% endif %}
+            </span>
+            {% if user_role in ('controller', 'gip') %}
+                <span class="pending-badge" id="pendingBadge">0</span>
+            {% endif %}
+        </div>
+        {% if user_role in ('controller', 'gip') %}
+        <button class="btn-metrics" onclick="showMetricsModal()" title="Метрики системы">
+            📊 Метрики
+        </button>
+        {% endif %}
+        <a href="{{ url_for('logout') }}" class="btn-logout"><i class="bi bi-box-arrow-right"></i> Выйти</a>
+    </div>
+</header>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<main class="app-content">
+    <div class="stats-row">
+        <div class="stat-card"><div class="stat-icon blue"><i class="bi bi-list-task"></i></div><div><div class="stat-value" id="statTotal">0</div><div class="stat-label">Всего задач</div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><i class="bi bi-check-circle"></i></div><div><div class="stat-value" id="statComplete">0</div><div class="stat-label">Завершено (100%)</div></div></div>
+        <div class="stat-card"><div class="stat-icon yellow"><i class="bi bi-clock-history"></i></div><div><div class="stat-value" id="statPending">0</div><div class="stat-label">Ожидают проверки</div></div></div>
+        <div class="stat-card"><div class="stat-icon red"><i class="bi bi-hourglass-split"></i></div><div><div class="stat-value" id="statInProgress">0</div><div class="stat-label">В работе</div></div></div>
+    </div>
+
+    {% if user_role == 'executor' %}
+    <!-- Панель для исполнителя -->
+    <div class="filter-panel">
+        <div class="filter-title"><i class="bi bi-funnel"></i> Фильтры</div>
+        <div class="filter-grid">
+            <div>
+                <label class="form-label">Проект</label>
+                <select id="projectSelect" class="form-select">
+                    <option value="">— Выберите проект —</option>
+                    <option value="all">📁 Все проекты</option>
+                    {% for file in xml_files %}
+                    <option value="{{ file }}">{{ file|replace('.xml','')|truncate(70) }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div><label class="form-label">Исполнитель</label><select id="executorFilter" class="form-select"><option value="">Все</option></select></div>
+            <div><button class="btn-primary-custom" id="loadTasksBtn" style="margin-top:22px;"><i class="bi bi-arrow-repeat"></i> Загрузить</button></div>
+        </div>
+        <!-- ИЗМЕНЕНИЕ: переключатель вида (дерево / список) для исполнителя -->
+        <div style="margin-top:12px;">
+            <span style="font-size:12px; color:var(--text-muted); margin-right:8px;">Вид:</span>
+            <div class="tree-view-toggle-group">
+                <button class="tree-view-toggle-btn active" id="viewToggleTree" onclick="activateTreeView()"><i class="bi bi-diagram-3"></i> Дерево</button>
+                <button class="tree-view-toggle-btn" id="viewToggleFlat" onclick="activateFlatView()"><i class="bi bi-list-ul"></i> Список</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if user_role in ('controller', 'gip') %}
+    <!-- Панель для контролёра/ГИПа -->
+    <div class="filter-panel">
+        <div class="filter-title"><i class="bi bi-funnel"></i> Фильтры ({% if user_role=='gip' %}ГИП{% else %}Контролёр{% endif %})</div>
+        <div class="filter-grid">
+            <div><label class="form-label">Проект</label><select id="controllerProjectFilter" class="form-select"><option value="">Все проекты</option>{% for file in xml_files %}<option value="{{ file }}">{{ file|replace('.xml','')|truncate(70) }}</option>{% endfor %}</select></div>
+            <div><label class="form-label">Отдел</label><select id="controllerDeptFilter" class="form-select"><option value="">Все отделы</option></select></div>
+            <div></div>
+            <div><button class="btn-primary-custom" id="loadControllerTasksBtn"><i class="bi bi-arrow-repeat"></i> Обновить</button></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="search-bar">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Поиск по названию задачи...">
+    </div>
+
+    <!-- ИЗМЕНЕНИЕ: добавлен id="flatViewContainer" для управления видимостью -->
+    <div class="table-card" id="flatViewContainer">
+        <div class="table-card-header">
+            <div class="d-flex align-items-center gap-2"><span class="title" id="tableTitle">Задачи</span><span class="count-badge" id="taskCount">0</span></div>
+            <div id="tableActions">
+                {% if user_role in ('controller', 'gip') %}
+                <button class="btn-primary-custom" onclick="showPendingSyncModal()">
+                    <i class="bi bi-clock-history"></i> Очередь синхронизации (<span id="pendingSyncCount">0</span>)
+                </button>
+                <button class="btn-primary-custom" onclick="showProcessedSyncModal()">
+                    <i class="bi bi-check2-circle"></i> История
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead><tr><th style="width:60px;">№</th><th>Название задачи</th><th style="width:100px;">Начало</th><th style="width:100px;">Окончание</th><th style="width:80px;">ID задачи</th><th>Исполнитель</th><th style="width:130px;">% факт</th><th style="width:50px;"></th></thead>
+                <tbody id="tasksTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if user_role == 'executor' %}
+    <!-- ИЗМЕНЕНИЕ: Контейнер для древовидного отображения задач (только исполнитель) -->
+    <div class="table-card" id="treeViewContainer" style="display:none;">
+        <div class="table-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <span class="title"><i class="bi bi-diagram-3"></i> Дерево задач</span>
+                <span class="count-badge" id="treeTaskCount">0</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn-ghost" onclick="treeExpandAll()"><i class="bi bi-arrows-expand"></i> Развернуть всё</button>
+                <button class="btn-ghost" onclick="treeCollapseAll()"><i class="bi bi-arrows-collapse"></i> Свернуть всё</button>
+            </div>
+        </div>
+        <div class="table-scroll">
+            <table class="data-table" id="treeTable">
+                <thead><tr>
+                    <th style="width:90px;">WBS</th>
+                    <th>Название задачи</th>
+                    <th style="width:100px;">Начало</th>
+                    <th style="width:100px;">Окончание</th>
+                    <th style="width:80px;">ID задачи</th>
+                    <th>Исполнитель</th>
+                    <th style="width:130px;">% факт</th>
+                    <th style="width:50px;"></th>
+                </tr></thead>
+                <tbody id="treeTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if user_role in ('controller', 'gip') %}
+    <div class="logs-panel">
+        <div class="logs-header"><span style="font-size:16px; font-weight:600;"><i class="bi bi-journal-text"></i> Журнал действий</span><button class="btn-ghost" onclick="loadLogs()"><i class="bi bi-arrow-clockwise"></i> Обновить</button></div>
+        <div class="logs-list" id="logsList"></div>
+    </div>
+    {% endif %}
+</main>
+
+<!-- Модалка: очередь синхронизации (controller/gip) -->
+<div class="modal fade" id="pendingSyncModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title"><i class="bi bi-clock-history"></i> Очередь синхронизации</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Фильтр по проекту</label>
+            <select id="pendingSyncProjectFilter" class="form-select">
+                <option value="">Все проекты</option>
+                {% for file in xml_files %}<option value="{{ file }}">{{ file|replace('.xml','') }}</option>{% endfor %}
+            </select>
+        </div>
+        <div id="pendingSyncList" style="max-height:500px; overflow-y:auto;"><div style="text-align:center;padding:20px;">Загрузка...</div></div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn-ghost" data-bs-dismiss="modal">Закрыть</button></div>
+</div></div></div>
+
+<!-- Модалка: история обработанных -->
+<div class="modal fade" id="processedSyncModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title"><i class="bi bi-check2-circle"></i> История синхронизаций</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"><div id="processedSyncList" style="max-height:400px; overflow-y:auto;"><div style="text-align:center;padding:20px;">Загрузка...</div></div></div>
+    <div class="modal-footer"><button type="button" class="btn-ghost" data-bs-dismiss="modal">Закрыть</button></div>
+</div></div></div>
+
+<!-- Модалка: метрики -->
+<div class="modal fade" id="metricsModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">📊 Метрики Prometheus</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body"><pre class="metrics-pre" id="metricsContent">Загрузка...</pre></div>
+    <div class="modal-footer">
+        <button type="button" class="btn-ghost" onclick="loadMetrics()"><i class="bi bi-arrow-clockwise"></i> Обновить</button>
+        <button type="button" class="btn-ghost" data-bs-dismiss="modal">Закрыть</button>
+    </div>
+</div></div></div>
+
+<!-- Модалка задачи -->
+<div class="modal fade" id="taskModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header">
+        <div>
+            <h5 class="modal-title" id="modalTaskName"></h5>
+            <div style="font-size:13px; color:var(--text-muted);">UID: <span id="modalUidDisplay"></span> · Проект: <span id="modalProjectDisplay"></span></div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+        <input type="hidden" id="modalTaskUid"><input type="hidden" id="modalProjectFile"><input type="hidden" id="modalText25"><input type="hidden" id="modalTaskId"><input type="hidden" id="modalRequestId"><input type="hidden" id="modalSyncEntryId" value="">
+
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('details', this)"><i class="bi bi-info-circle"></i> Данные</button>
+            <button class="tab-btn" onclick="switchTab('comments', this)"><i class="bi bi-chat-dots"></i> Комментарии <span id="commentsCount"></span></button>
+            <button class="tab-btn" onclick="switchTab('history', this)"><i class="bi bi-clock-history"></i> История запросов</button>
+            <button class="tab-btn" onclick="switchTab('percent_history', this)"><i class="bi bi-graph-up"></i> История %</button>
+        </div>
+
+        <div class="tab-content active" id="tab-details">
+            <div class="modal-section">
+                <div class="modal-section-title">Информация</div>
+                <div class="info-grid">
+                    <div><div class="info-label">Начало</div><div class="info-value" id="modalStart">-</div></div>
+                    <div><div class="info-label">Окончание</div><div class="info-value" id="modalFinish">-</div></div>
+                    <div><div class="info-label">ID задачи</div><div class="info-value" id="modalOL">-</div></div>
+                    <div><div class="info-label">Исполнитель</div><div class="info-value" id="modalResource">-</div></div>
+                </div>
+            </div>
+            <div class="modal-section">
+                <div class="modal-section-title">Процент выполнения</div>
+                <div class="mb-3"><label class="form-label">Текущий %</label><input type="text" class="form-control" id="modalCurrentPercent" disabled style="background:var(--bg-secondary); font-weight:600;"></div>
+                <div id="executorPercentBlock"><div class="mb-3"><label class="form-label">Новый %</label><input type="number" class="form-control" id="modalNewPercent" min="0" max="100"></div></div>
+                <div id="controllerPercentBlock" style="display:none;">
+                    <div class="info-grid mb-3">
+                        <div><label class="form-label">Запрошено</label><input type="text" class="form-control" id="modalRequestedPercent" disabled style="background:var(--warning-light);"></div>
+                        <div><label class="form-label">Утверждённый %</label><input type="number" class="form-control" id="modalApprovedPercent" min="0" max="100" style="border-color:var(--success);"></div>
+                    </div>
+                </div>
+                <div id="syncPercentBlock" style="display:none;">
+                    <div class="info-grid mb-3">
+                        <div><label class="form-label">Запрошено</label><input type="text" class="form-control" id="modalRequestedPercentSync" disabled style="background:var(--warning-light);"></div>
+                        <div><label class="form-label">Утверждено</label><input type="text" class="form-control" id="modalApprovedPercentSync" disabled style="background:var(--success-light);"></div>
+                    </div>
+                    <div class="mb-3"><label class="form-label">Согласованный % (из очереди)</label><input type="number" class="form-control" id="modalSyncPercent" min="0" max="100"></div>
+                    <div class="mb-3"><label class="form-label">Заметка ГИПа</label><textarea class="form-control" id="modalGipNote" rows="2"></textarea></div>
+                </div>
+            </div>
+            <div class="modal-section"><div class="modal-section-title">Комментарий</div><textarea class="form-control" id="modalComment" rows="2" placeholder="Оставьте заметку..."></textarea></div>
+        </div>
+
+        <div class="tab-content" id="tab-comments"><div id="commentsContainer"><div style="text-align:center;color:var(--text-muted);padding:20px;">Загрузка...</div></div></div>
+        <div class="tab-content" id="tab-history"><div id="historyContainer"><div style="text-align:center;color:var(--text-muted);padding:20px;">Загрузка...</div></div></div>
+        <div class="tab-content" id="tab-percent_history"><div id="percentHistoryContainer" style="max-height:300px;overflow-y:auto;"><div style="text-align:center;color:var(--text-muted);padding:20px;">Загрузка...</div></div></div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn-ghost" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn-danger-custom" id="rejectRequestBtn" style="display:none;"><i class="bi bi-x-circle"></i> Отклонить</button>
+        <button type="button" class="btn-success-custom" id="saveTaskChanges"><i class="bi bi-check-lg"></i> Сохранить</button>
+        <button type="button" class="btn-primary-custom" id="saveSyncPercentBtn" style="display:none;"><i class="bi bi-save"></i> Сохранить изменения</button>
+        <button type="button" class="btn-warning-custom" id="returnSyncBtn" style="display:none;">
+            <i class="bi bi-arrow-return-left"></i> Вернуть в задачи
+        </button>
+    </div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const USER_ROLE = document.body.dataset.role;
+const USERNAME  = document.body.dataset.username;
+let currentTasks = [];
+
+const deptMapping = {
+    "Белов Максим (ТХ)":"ТХ","Лёшина Галина":"ЭС","Спиров Дмитрий":"ССиА","Денисов Алексей":"ИО","Субподряд":"Субподряд","Налиухин Дмитрий":"Э","Немченко Егор":"ГИП","Слобожан Александра":"АСО","Исавнин Максим":"ОГП","Катенина Ксения":"ОГП","Корсакова Софья":"АСО","Буржинская Елена":"ЭС","Насрединов Сергей":"ТХ","Шилов Константин":"ССиА","Крылова Светлана":"ТХ","Костичева (Сафонова) Юлия":"ТХ","Ящерицын Александр":"АСО","Морозов Вадим":"АСО","Блинов Захар":"АСО","Храпова Ольга":"ИО","Сикидин Игорь":"ССиА","Говорков Станислав":"ГИП","Барабанов Павел":"ОУП","Андреева Ольга":"КР","Ромашов Александр":"ЭС","Бердышева Маргарита":"ИО","Кошкин Сергей":"ССиА","Иванова Ольга":"КР","Тихонов Денис":"АСО","Канина Галина":"АСО","Грибков Антон":"КР","Байков Вадим":"ССиА","Савенкова Алла":"ТХ","Белов Максим":"Департамент проектирования","Пелевин Александр":"ГИП","Макшаков Антон":"ОУП","Шкурат Александр":"ИО","Тарасов Андрей":"ТХ","Касьянова Анна":"ТХ","Котов Кирилл":"ГИП","Бытотова Светлана":"Э","Грибанова Яна":"АСО","Денисов Евгений":"ИО","Нет":"Нет","Сушков Иван":"ГИП","Рустам Жолдакаев":"ГИП","Заказчик":"Заказчик","Сергеев Максим":"КР","Голубев Андрей":"КР","Литвин Георгий":"АСО","Белов Никита":"ИО","Подрядчик":"Подрядчик","Яцков Тимофей":"АСО","Дорошенко Владимир":"ИО"
+};
+function getDepartment(r){ return deptMapping[r] || "Другой"; }
+
+function showToast(msg, type='info'){
+    const c=document.getElementById('toastContainer');
+    const icons={success:'bi-check-circle-fill',error:'bi-exclamation-circle-fill',info:'bi-info-circle-fill'};
+    const t=document.createElement('div'); t.className=`toast-item ${type}`;
+    t.innerHTML=`<i class="bi ${icons[type]}"></i><span>${msg}</span>`;
+    c.appendChild(t);
+    setTimeout(()=>{t.style.animation='slideOut .3s forwards'; setTimeout(()=>t.remove(),300);},4000);
+}
+
+function escapeHtml(t){ if(!t) return ''; const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+
+async function refreshStats(){
+    try{
+        const r=await fetch('/api/stats'); const d=await r.json();
+        document.getElementById('statPending').textContent=d.pending||0;
+        const b=document.getElementById('pendingBadge');
+        if(b){b.textContent=d.pending||0; b.classList.toggle('visible', d.pending>0);}
+    }catch(e){}
+    const total=currentTasks.length;
+    const complete=currentTasks.filter(t=>parseInt(t.percent_complete||0)===100).length;
+    const inProg=currentTasks.filter(t=>{const p=parseInt(t.percent_complete||0); return p>0&&p<100;}).length;
+    document.getElementById('statTotal').textContent=total;
+    document.getElementById('statComplete').textContent=complete;
+    document.getElementById('statInProgress').textContent=inProg;
+}
+
+async function loadExecutorTasks(){
+    const project=document.getElementById('projectSelect').value;
+    if(!project){showToast('Выберите проект','error'); return;}
+    document.getElementById('tasksTableBody').innerHTML='<tr><td colspan="8" class="text-center py-4"><div class="spinner"></div> Загрузка...</td></tr>';
+    const r=await fetch(`/api/tasks?project=${encodeURIComponent(project)}`);
+    currentTasks=await r.json();
+    updateExecutorFilter(currentTasks);
+    renderTasks(); refreshStats();
+    showToast(`Загружено задач: ${currentTasks.length}`,'success');
+}
+
+async function loadControllerTasks(){
+    document.getElementById('tasksTableBody').innerHTML='<tr><td colspan="8" class="text-center py-4"><div class="spinner"></div> Загрузка...</td></tr>';
+    const r=await fetch('/api/pending_requests');
+    let tasks=r.ok?await r.json():[];
+    const pf=document.getElementById('controllerProjectFilter')?.value;
+    const df=document.getElementById('controllerDeptFilter')?.value;
+    if(pf) tasks=tasks.filter(t=>t.project===pf);
+    if(df) tasks=tasks.filter(t=>t.resources&&t.resources.some(r=>getDepartment(r)===df));
+    currentTasks=tasks;
+    renderTasks(); refreshStats();
+}
+
+function updateExecutorFilter(tasks){
+    const ex=new Set();
+    tasks.forEach(t=>{if(t.resources) t.resources.forEach(r=>{if(r) ex.add(r);});});
+    const s=document.getElementById('executorFilter');
+    if(!s) return;
+    s.innerHTML='<option value="">Все</option>';
+    Array.from(ex).sort().forEach(e=>{s.innerHTML+=`<option value="${e}">${e}</option>`;});
+}
+
+function populateDeptFilter(){
+    const set=new Set();
+    for(let k in deptMapping) set.add(deptMapping[k]);
+    const s=document.getElementById('controllerDeptFilter');
+    if(!s) return;
+    s.innerHTML='<option value="">Все отделы</option>';
+    Array.from(set).sort().forEach(d=>{s.innerHTML+=`<option value="${d}">${d}</option>`;});
+}
+
+function renderTasks(){
+    const tbody=document.getElementById('tasksTableBody');
+    let tasks=[...currentTasks];
+    if(USER_ROLE==='executor'){
+        const fe=document.getElementById('executorFilter')?.value;
+        tasks=tasks.filter(t=>{
+            if(fe&&(!t.resources||!t.resources.includes(fe))) return false;
+            return true;
+        });
+    }
+    const q=(document.getElementById('searchInput').value||'').toLowerCase().trim();
+    if(q) tasks=tasks.filter(t=>(t.name||'').toLowerCase().includes(q));
+    document.getElementById('taskCount').textContent=tasks.length;
+    if(tasks.length===0){
+        tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="empty-icon"><i class="bi bi-inbox"></i></div><div>Нет данных</div></div></td></tr>';
+        return;
+    }
+    tbody.innerHTML=tasks.map(t=>{
+        const p=parseInt(t.percent_complete||0);
+        let cls='low'; if(p>=100) cls='complete'; else if(p>=60) cls='high'; else if(p>=30) cls='mid';
+        const ol=t.text25||'-';
+        const olCls=(t.text25&&t.text25.trim()!==''&&t.text25.trim()!=='-')?'':'empty';
+        const res=t.resources&&t.resources.length?t.resources.map(r=>`<span class="resource-tag">${r}</span>`).join(''):'<span style="color:var(--text-muted)">—</span>';
+        return `<tr>
+            <td class="mono-cell">${t.id||'-'}</td>
+            <td class="task-name-cell" title="${(t.name||'').replace(/"/g,'&quot;')}">${t.name||''}</td>
+            <td>${t.start?t.start.split('T')[0]:'-'}</td>
+            <td>${t.finish?t.finish.split('T')[0]:'-'}</td>
+            <td><span class="ol-value ${olCls}">${ol}</span></td>
+            <td>${res}</td>
+            <td><div class="progress-mini"><div class="progress-track"><div class="progress-fill ${cls}" style="width:${p}%"></div></div><span class="progress-value">${p}%</span></div></td>
+            <td><button class="action-btn open-modal-btn" data-uid="${t.uid}" data-project="${t.project||''}" data-text25="${t.text25||''}" data-id="${t.id||''}" data-name="${(t.name||'').replace(/"/g,'&quot;')}" data-percent="${t.percent_complete||0}" data-text1="${t.text1||''}" data-start="${t.start||''}" data-finish="${t.finish||''}" data-resources="${t.resources?t.resources.join(', '):''}" data-request-id="${t.request_id||''}" data-requested="${t.requested_percent||''}"><i class="bi bi-pencil-square"></i></button></td>
+        </tr>`;
+    }).join('');
+    document.querySelectorAll('.open-modal-btn').forEach(b=>b.addEventListener('click',()=>openTaskModal(b)));
+}
+
+async function updatePendingSyncCount(){
+    if(!['controller','gip'].includes(USER_ROLE)) return;
+    try{
+        const r=await fetch('/api/pending_sync_json');
+        const d=await r.json();
+        const el=document.getElementById('pendingSyncCount');
+        if(el) el.textContent=d.length;
+    }catch(e){}
+}
+
+async function showPendingSyncModal(){
+    const c=document.getElementById('pendingSyncList');
+    c.innerHTML='<div style="text-align:center;padding:20px;"><div class="spinner"></div></div>';
+    try{
+        let url='/api/pending_sync_json';
+        const pf=document.getElementById('pendingSyncProjectFilter').value;
+        if(pf) url+=`?project=${encodeURIComponent(pf)}`;
+        const r=await fetch(url); const d=await r.json();
+        if(d.length===0){c.innerHTML='<div style="text-align:center;padding:20px;">Очередь пуста.</div>';}
+        else{
+            let h=`<table class="data-table"><thead><tr><th>Наименование задачи</th><th>ID</th><th>ID зд.</th><th>Тек.%</th><th>Запр.%</th><th>Утв.%</th><th>Соглас.%</th><th>Заметка ГИПа</th><th>Создано</th><th></th></tr></thead><tbody>`;
+            d.forEach(it=>{
+                const taskName = it.task_name ? escapeHtml(it.task_name) : '—';
+                h+=`<tr class="clickable-row" data-entry='${JSON.stringify(it).replace(/'/g, "&apos;").replace(/"/g, '&quot;')}'>
+                    <td>${taskName}</td>
+                    <td>${it.id}</td>
+                    <td>${escapeHtml(it.text25||'')}</td>
+                    <td>${it.current_percent !== null && it.current_percent !== undefined ? it.current_percent+'%' : '—'}</td>
+                    <td>${it.requested_percent || '—'}%</td>
+                    <td>${it.approved_percent || '—'}%</td>
+                    <td><strong>${it.new_percent}%</strong></td>
+                    <td class="gip-note-cell" title="${escapeHtml(it.gip_note||'')}">${escapeHtml((it.gip_note||'').substring(0,50))}</td>
+                    <td>${new Date(it.created_at).toLocaleString()}</td>
+                    <td><button class="btn-delete" onclick="event.stopPropagation(); deletePendingSyncEntry(${it.id})">Удалить</button></td>
+                </tr>`;
+            });
+            h+='</tbody></table>';
+            c.innerHTML=h;
+            document.querySelectorAll('#pendingSyncList .clickable-row').forEach(row=>{
+                row.addEventListener('click',e=>{
+                    if(e.target.classList.contains('btn-delete')) return;
+                    let entry;
+                    try {
+                        entry = JSON.parse(row.dataset.entry);
+                    } catch(e) {
+                        entry = JSON.parse(row.getAttribute('data-entry').replace(/&apos;/g, "'").replace(/&quot;/g, '"'));
+                    }
+                    openSyncTaskModal(entry);
+                });
+            });
+        }
+    } catch(e){c.innerHTML='<div style="color:var(--danger);padding:20px;">Ошибка</div>';}
+    new bootstrap.Modal('#pendingSyncModal').show();
+}
+
+async function deletePendingSyncEntry(id){
+    if(!confirm('Удалить запись из очереди?')) return;
+    const r=await fetch(`/api/pending_sync_json/${id}`,{method:'DELETE'});
+    const res=await r.json();
+    if(r.ok){showToast('Удалено','success'); await updatePendingSyncCount(); await showPendingSyncModal();}
+    else showToast(res.error||'Ошибка','error');
+}
+
+async function showProcessedSyncModal(){
+    const c=document.getElementById('processedSyncList');
+    c.innerHTML='<div style="text-align:center;padding:20px;"><div class="spinner"></div></div>';
+    try{
+        const r=await fetch('/api/processed_sync'); const d=await r.json();
+        if(d.length===0){c.innerHTML='<div style="text-align:center;padding:20px;">Нет записей.</div>';}
+        else{
+            let h='<table class="data-table"><thead><tr><th>ID</th><th>Проект</th><th>ID зд.</th><th>Название</th><th>Было</th><th>Стало</th><th>Дата</th></tr></thead><tbody>';
+            d.forEach(it=>{h+=`<tr><td>${it.id}</td><td>${(it.project_file||'').replace('.xml','')}</td><td>${it.text25}</td><td>${it.task_name||'-'}</td><td>${it.old_percent}%</td><td>${it.new_percent}%</td><td>${new Date(it.processed_at).toLocaleString()}</td></tr>`;});
+            h+='</tbody></table>';
+            c.innerHTML=h;
+        }
+    }catch(e){c.innerHTML='<div style="color:var(--danger);padding:20px;">Ошибка</div>';}
+    new bootstrap.Modal('#processedSyncModal').show();
+}
+
+async function showMetricsModal(){
+    await loadMetrics();
+    new bootstrap.Modal('#metricsModal').show();
+}
+async function loadMetrics(){
+    const el=document.getElementById('metricsContent');
+    el.textContent='Загрузка...';
+    try{
+        const r=await fetch('/metrics');
+        el.textContent=await r.text();
+    }catch(e){el.textContent='Ошибка загрузки: '+e;}
+}
+
+async function openSyncTaskModal(entry){
+    const r=await fetch(`/api/task_by_uid?project_file=${encodeURIComponent(entry.project_file)}&task_uid=${encodeURIComponent(entry.task_uid)}`);
+    if(!r.ok){showToast('Задача не найдена','error'); return;}
+    const task=await r.json();
+    document.getElementById('modalTaskUid').value=task.uid;
+    document.getElementById('modalProjectFile').value=task.project;
+    document.getElementById('modalText25').value=task.text25;
+    document.getElementById('modalTaskId').value=task.id;
+    document.getElementById('modalRequestId').value='';
+    document.getElementById('modalSyncEntryId').value=entry.id;
+    document.getElementById('modalTaskName').textContent=task.name;
+    document.getElementById('modalUidDisplay').textContent=task.uid;
+    document.getElementById('modalProjectDisplay').textContent=(task.project||'').replace('.xml','');
+    document.getElementById('modalStart').textContent=task.start?task.start.split('T')[0]:'-';
+    document.getElementById('modalFinish').textContent=task.finish?task.finish.split('T')[0]:'-';
+    document.getElementById('modalOL').textContent=task.text25||'-';
+    document.getElementById('modalResource').textContent=task.resources?task.resources.join(', '):'-';
+    document.getElementById('modalCurrentPercent').value=(task.percent_complete||0)+'%';
+    document.getElementById('executorPercentBlock').style.display='none';
+    document.getElementById('controllerPercentBlock').style.display='none';
+    document.getElementById('syncPercentBlock').style.display='block';
+    document.getElementById('modalRequestedPercentSync').value=(entry.requested_percent!==undefined?entry.requested_percent:'—')+'%';
+    document.getElementById('modalApprovedPercentSync').value=(entry.approved_percent!==undefined?entry.approved_percent:'—')+'%';
+    document.getElementById('modalSyncPercent').value=entry.new_percent;
+    document.getElementById('modalGipNote').value=entry.gip_note||'';
+    document.getElementById('modalComment').value='';
+    document.getElementById('rejectRequestBtn').style.display='none';
+    document.getElementById('saveTaskChanges').style.display='none';
+    document.getElementById('saveSyncPercentBtn').style.display='inline-flex';
+    document.getElementById('returnSyncBtn').style.display='inline-flex';
+    document.getElementById('returnSyncBtn').onclick = () => returnSyncEntry(entry.id, task.uid, task.project, task.name);
+    loadComments(task.uid, task.project);
+    loadHistory(task.uid, task.project);
+    loadPercentHistory(task.uid, task.project);
+    switchTab('details', document.querySelector('.tab-btn'));
+    new bootstrap.Modal('#taskModal').show();
+}
+
+async function returnSyncEntry(entryId, taskUid, projectFile, taskName) {
+    const newPercent = parseInt(document.getElementById('modalSyncPercent').value);
+    const gipNote = document.getElementById('modalGipNote').value;
+    const comment = document.getElementById('modalComment').value.trim();
+    
+    if (isNaN(newPercent)) {
+        showToast('Укажите корректный процент', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/pending_sync_json/${entryId}/return`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                new_percent: newPercent,
+                gip_note: gipNote,
+                comment: comment,
+                task_uid: taskUid,
+                project_file: projectFile,
+                task_name: taskName
+            })
+        });
+        const result = await response.json();
+        if (response.ok) {
+            showToast('Запись возвращена, создана новая заявка', 'success');
+            bootstrap.Modal.getInstance('#taskModal').hide();
+            await updatePendingSyncCount();
+            await showPendingSyncModal();
+            if (['controller', 'gip'].includes(USER_ROLE)) {
+                loadControllerTasks();
+            }
+        } else {
+            showToast(result.error || 'Ошибка при возврате', 'error');
+        }
+    } catch (err) {
+        showToast('Ошибка сети', 'error');
+    }
+}
+
+document.getElementById('saveSyncPercentBtn').addEventListener('click', async ()=>{
+    const id=document.getElementById('modalSyncEntryId').value;
+    const np=parseInt(document.getElementById('modalSyncPercent').value);
+    const note=document.getElementById('modalGipNote').value;
+    const comment=document.getElementById('modalComment').value.trim();
+    const taskUid=document.getElementById('modalTaskUid').value;
+    const project=document.getElementById('modalProjectFile').value;
+    const taskName=document.getElementById('modalTaskName').textContent;
+    if(isNaN(np)||np<0||np>100){showToast('Неверный %','error'); return;}
+    const r=await fetch(`/api/pending_sync_json/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({new_percent:np,gip_note:note,comment:comment,task_uid:taskUid,project_file:project,task_name:taskName})});
+    if(r.ok){showToast('Сохранено','success'); bootstrap.Modal.getInstance('#taskModal').hide(); await updatePendingSyncCount(); await showPendingSyncModal();}
+    else{const e=await r.json(); showToast(e.error||'Ошибка','error');}
+});
+
+function openTaskModal(btn){
+    const d=btn.dataset;
+    const isCtrl=['controller','gip'].includes(USER_ROLE);
+    document.getElementById('modalTaskUid').value=d.uid;
+    document.getElementById('modalProjectFile').value=d.project;
+    document.getElementById('modalText25').value=d.text25;
+    document.getElementById('modalTaskId').value=d.id;
+    document.getElementById('modalRequestId').value=d.requestId||'';
+    document.getElementById('modalSyncEntryId').value='';
+    document.getElementById('modalTaskName').textContent=d.name;
+    document.getElementById('modalUidDisplay').textContent=d.uid;
+    document.getElementById('modalProjectDisplay').textContent=(d.project||'').replace('.xml','');
+    document.getElementById('modalStart').textContent=d.start?d.start.split('T')[0]:'-';
+    document.getElementById('modalFinish').textContent=d.finish?d.finish.split('T')[0]:'-';
+    document.getElementById('modalOL').textContent=d.text25||'-';
+    document.getElementById('modalResource').textContent=d.resources||'-';
+    document.getElementById('modalCurrentPercent').value=d.percent+'%';
+    document.getElementById('modalNewPercent').value='';
+    document.getElementById('modalRequestedPercent').value='';
+    document.getElementById('modalApprovedPercent').value='';
+    document.getElementById('modalComment').value='';
+    document.getElementById('syncPercentBlock').style.display='none';
+    document.getElementById('saveSyncPercentBtn').style.display='none';
+    document.getElementById('returnSyncBtn').style.display='none';
+    if(isCtrl && d.requestId){
+        document.getElementById('executorPercentBlock').style.display='none';
+        document.getElementById('controllerPercentBlock').style.display='block';
+        document.getElementById('modalRequestedPercent').value=(d.requested||'')+'%';
+        document.getElementById('modalApprovedPercent').value=d.requested||'';
+        document.getElementById('rejectRequestBtn').style.display='inline-flex';
+    } else if(isCtrl){
+        document.getElementById('executorPercentBlock').style.display='block';
+        document.getElementById('controllerPercentBlock').style.display='none';
+        document.getElementById('rejectRequestBtn').style.display='none';
+    } else {
+        document.getElementById('executorPercentBlock').style.display='block';
+        document.getElementById('controllerPercentBlock').style.display='none';
+        document.getElementById('rejectRequestBtn').style.display='none';
+    }
+    document.getElementById('saveTaskChanges').style.display='inline-flex';
+    switchTab('details', document.querySelector('.tab-btn'));
+    loadComments(d.uid, d.project);
+    loadHistory(d.uid, d.project);
+    loadPercentHistory(d.uid, d.project);
+    new bootstrap.Modal('#taskModal').show();
+}
+
+function switchTab(id, btn){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    document.getElementById(`tab-${id}`).classList.add('active');
+}
+
+async function loadComments(uid, pf){
+    const c=document.getElementById('commentsContainer');
+    c.innerHTML='<div style="text-align:center;padding:20px;"><div class="spinner"></div></div>';
+    try{
+        const r=await fetch(`/api/comments/${uid}/${encodeURIComponent(pf)}`);
+        const cm=await r.json();
+        document.getElementById('commentsCount').textContent=cm.length?`(${cm.length})`:``;
+        if(!cm.length){c.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:30px;">Нет комментариев</div>'; return;}
+        c.innerHTML=cm.map(x=>`<div class="comment-item"><div class="comment-meta"><i class="bi bi-person-circle"></i> ${x.username||x.role} · ${x.timestamp?new Date(x.timestamp).toLocaleString('ru'):''}</div><div class="comment-text">${escapeHtml(x.text)}</div></div>`).join('');
+    }catch(e){c.innerHTML='<div style="color:var(--danger);padding:20px;">Ошибка</div>';}
+}
+async function loadHistory(uid, pf){
+    const c=document.getElementById('historyContainer');
+    c.innerHTML='<div style="text-align:center;padding:20px;"><div class="spinner"></div></div>';
+    try{
+        const r=await fetch(`/api/task_history/${uid}/${encodeURIComponent(pf)}`); const items=await r.json();
+        if(!items.length){c.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:30px;">Нет истории</div>'; return;}
+        const sm={pending:'<span class="status-badge pending">Ожидание</span>',approved:'<span class="status-badge approved">Утв.</span>',rejected:'<span class="status-badge rejected">Откл.</span>'};
+        c.innerHTML=items.map(h=>`<div class="history-item"><span style="min-width:120px;color:var(--text-muted);font-size:12px;">${h.timestamp?new Date(h.timestamp).toLocaleString('ru'):''}</span><span>Запр.: ${h.requested_percent}%</span>${h.approved_percent!=null?`<span style="color:var(--success)">→ ${h.approved_percent}%</span>`:''}${sm[h.status]||h.status}</div>`).join('');
+    }catch(e){c.innerHTML='<div style="color:var(--danger);padding:20px;">Ошибка</div>';}
+}
+async function loadPercentHistory(uid, pf){
+    const c=document.getElementById('percentHistoryContainer');
+    c.innerHTML='<div style="text-align:center;padding:20px;"><div class="spinner"></div></div>';
+    try{
+        const r=await fetch(`/api/percent_history/${uid}/${encodeURIComponent(pf)}`); const items=await r.json();
+        if(!items.length){c.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:30px;">Нет записей</div>'; return;}
+        c.innerHTML=items.map(h=>`<div style="padding:10px 0;border-bottom:1px solid var(--border-color);font-size:13px;"><div><strong>${h.changed_by}</strong>: ${h.old_percent!==null?h.old_percent+'% → ':''}${h.new_percent}%</div><div style="color:var(--text-muted);font-size:11px;">${new Date(h.changed_at).toLocaleString('ru')}</div></div>`).join('');
+    }catch(e){c.innerHTML='<div style="color:var(--danger);padding:20px;">Ошибка</div>';}
+}
+
+document.getElementById('saveTaskChanges').addEventListener('click', async ()=>{
+    const isCtrl=['controller','gip'].includes(USER_ROLE);
+    const taskUid=document.getElementById('modalTaskUid').value;
+    const project=document.getElementById('modalProjectFile').value;
+    const text25=document.getElementById('modalText25').value;
+    const taskName=document.getElementById('modalTaskName').textContent;
+    const comment=document.getElementById('modalComment').value.trim();
+    const requestId=document.getElementById('modalRequestId').value;
+    if(comment){
+        await fetch('/api/comment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task_uid:taskUid,project_file:project,comment,task_name:taskName})});
+    }
+    if(isCtrl && requestId){
+        const approved=document.getElementById('modalApprovedPercent').value;
+        if(approved===''){showToast('Укажите %','error'); return;}
+        const r=await fetch('/api/approve_percent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({request_id:requestId,task_uid:taskUid,project_file:project,text25,approved_percent:parseInt(approved),task_name:taskName})});
+        const res=await r.json();
+        if(res.status==='approved'){showToast('Утверждено','success'); bootstrap.Modal.getInstance('#taskModal').hide(); loadControllerTasks(); loadLogs(); updatePendingSyncCount();}
+        else showToast(res.message||'Ошибка','error');
+    } else {
+        const np=document.getElementById('modalNewPercent').value;
+        if(np!==''){
+            const r=await fetch('/api/request_percent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task_uid:taskUid,project_file:project,percent:parseInt(np),text25,task_name:taskName})});
+            const res=await r.json();
+            if(res.status==='pending') showToast('Запрос отправлен','success');
+            else if(res.status==='queued') showToast('В очереди','success');
+            else showToast(res.message||'Ошибка','error');
+        } else if(comment) showToast('Комментарий сохранён','success');
+        bootstrap.Modal.getInstance('#taskModal').hide();
+        refreshStats();
+    }
+});
+
+document.getElementById('rejectRequestBtn').addEventListener('click', async ()=>{
+    const rid=document.getElementById('modalRequestId').value;
+    const tn=document.getElementById('modalTaskName').textContent;
+    if(!rid) return;
+    if(!confirm(`Отклонить заявку для "${tn}"?`)) return;
+    const r=await fetch('/api/reject_request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({request_id:rid,task_name:tn,reason:'Отклонено'})});
+    const res=await r.json();
+    if(res.status==='ok'){showToast('Отклонено','info'); bootstrap.Modal.getInstance('#taskModal').hide(); loadControllerTasks(); loadLogs();}
+    else showToast(res.message||'Ошибка','error');
+});
+
+async function loadLogs(){
+    if(!['controller','gip'].includes(USER_ROLE)) return;
+    const c=document.getElementById('logsList');
+    if(!c) return;
+    try{
+        const r=await fetch('/api/logs?limit=50'); if(!r.ok) return;
+        const logs=await r.json();
+        if(!logs.length){c.innerHTML='<div style="padding:24px;text-align:center;color:var(--text-muted);">Пусто</div>'; return;}
+        c.innerHTML=logs.map(l=>`<div class="log-entry"><span class="log-time">${l.timestamp?new Date(l.timestamp).toLocaleString('ru'):''}</span><span>${l.action}</span><span style="color:var(--text-muted);font-size:12px;">${l.task_name||l.project_file||''}</span><span class="status-badge ${l.status==='success'?'approved':'rejected'}" style="font-size:10px;">${l.status||''}</span></div>`).join('');
+    }catch(e){}
+}
+
+// Инициализация
+document.getElementById('searchInput').addEventListener('input', renderTasks);
+if(document.getElementById('loadTasksBtn')) document.getElementById('loadTasksBtn').addEventListener('click', loadExecutorTasks);
+if(document.getElementById('loadControllerTasksBtn')) document.getElementById('loadControllerTasksBtn').addEventListener('click', loadControllerTasks);
+if(document.getElementById('executorFilter')) document.getElementById('executorFilter').addEventListener('change', renderTasks);
+if(document.getElementById('controllerProjectFilter')) document.getElementById('controllerProjectFilter').addEventListener('change', loadControllerTasks);
+if(document.getElementById('controllerDeptFilter')) document.getElementById('controllerDeptFilter').addEventListener('change', loadControllerTasks);
+if(document.getElementById('pendingSyncProjectFilter')) document.getElementById('pendingSyncProjectFilter').addEventListener('change', showPendingSyncModal);
+
+if(['controller','gip'].includes(USER_ROLE)){
+    populateDeptFilter();
+    loadControllerTasks();
+    loadLogs();
+    updatePendingSyncCount();
+    setInterval(updatePendingSyncCount, 30000);
+}
+refreshStats();
+
+
+/* =====================================================================
+   ИЗМЕНЕНИЕ: Блок древовидного отображения для роли "Исполнитель"
+   Весь код ниже активен ТОЛЬКО при USER_ROLE === 'executor'.
+   Существующие функции выше НЕ затронуты.
+   ===================================================================== */
+if (USER_ROLE === 'executor') {
+(function(){
+    "use strict";
+
+    let treeViewActive = true;   // по умолчанию — дерево
+    let treeDataCache = null;    // кэш последней загрузки дерева
+
+    /* ---------- Утилита: «уплощение» дерева для currentTasks и фильтров ---------- */
+    function flattenTree(nodes, projectName) {
+        let out = [];
+        for (const n of nodes) {
+            const copy = Object.assign({}, n);
+            delete copy.children;
+            copy.project = projectName;
+            out.push(copy);
+            if (n.children && n.children.length) {
+                out = out.concat(flattenTree(n.children, projectName));
+            }
+        }
+        return out;
+    }
+
+    /* ---------- Рекурсивный рендер строк дерева ---------- */
+    function buildTreeRows(tasks, projectName, level, parentUid) {
+        if (!tasks || !tasks.length) return '';
+        let html = '';
+        for (const task of tasks) {
+            const indent = level * 22;
+            const hasCh = task.children && task.children.length > 0;
+            let toggle = '';
+            if (hasCh) {
+                toggle = `<span class="tree-toggle" data-tuid="${task.uid}" data-tfile="${escapeHtml(projectName)}"
+                    onclick="event.stopPropagation(); window._treeToggle('${task.uid}','${escapeHtml(projectName)}')">▶</span>`;
+            }
+            const p = parseInt(task.percent_complete || 0);
+            let cls = 'low';
+            if (p >= 100) cls = 'complete'; else if (p >= 60) cls = 'high'; else if (p >= 30) cls = 'mid';
+
+            const res = task.resources && task.resources.length
+                ? task.resources.map(r => `<span class="resource-tag">${escapeHtml(r)}</span>`).join('')
+                : '<span style="color:var(--text-muted)">—</span>';
+
+            const hiddenCls = level > 0 ? ' tree-hidden' : '';
+            const summaryCls = hasCh ? ' tree-summary-row' : '';
+            const olVal = task.outline_number || '';
+            const olCls = olVal ? '' : ' empty';
+
+            html += `<tr class="tree-row${hiddenCls}${summaryCls}"
+                data-tree-level="${level}"
+                data-tree-parent="${escapeHtml(String(parentUid || ''))}"
+                data-tree-uid="${task.uid}"
+                data-tree-file="${escapeHtml(projectName)}"
+                data-tree-name="${escapeHtml(task.name || '')}"
+                data-tree-resources="${escapeHtml((task.resources || []).join('|||'))}">
+                <td class="mono-cell">${escapeHtml(olVal)}</td>
+                <td class="task-name-cell" style="white-space:normal; word-break:break-word;">
+                    <span class="tree-indent" style="width:${indent}px"></span>${toggle}${escapeHtml(task.name || '')}
+                </td>
+                <td>${task.start ? task.start.split('T')[0] : '-'}</td>
+                <td>${task.finish ? task.finish.split('T')[0] : '-'}</td>
+                <td><span class="ol-value${olCls}">${task.text25 || '-'}</span></td>
+                <td>${res}</td>
+                <td><div class="progress-mini"><div class="progress-track"><div class="progress-fill ${cls}" style="width:${p}%"></div></div><span class="progress-value">${p}%</span></div></td>
+                <td><button class="action-btn tree-modal-btn"
+                    data-uid="${task.uid}"
+                    data-project="${escapeHtml(projectName)}"
+                    data-text25="${task.text25 || ''}"
+                    data-id="${task.id || ''}"
+                    data-name="${escapeHtml(task.name || '')}"
+                    data-percent="${task.percent_complete || 0}"
+                    data-text1="${task.text1 || ''}"
+                    data-start="${task.start || ''}"
+                    data-finish="${task.finish || ''}"
+                    data-resources="${task.resources ? task.resources.join(', ') : ''}"
+                    data-request-id=""
+                    data-requested=""
+                    onclick="event.stopPropagation(); openTaskModal(this)"><i class="bi bi-pencil-square"></i></button></td>
+            </tr>`;
+
+            if (hasCh) {
+                html += buildTreeRows(task.children, projectName, level + 1, task.uid);
+            }
+        }
+        return html;
+    }
+
+    /* ---------- Загрузка и отрисовка дерева ---------- */
+    async function loadExecutorTasksTree() {
+        const project = document.getElementById('projectSelect').value;
+        if (!project) { showToast('Выберите проект', 'error'); return; }
+
+        // Показываем дерево, прячем плоскую таблицу
+        document.getElementById('treeViewContainer').style.display = '';
+        document.getElementById('flatViewContainer').style.display = 'none';
+
+        const tbody = document.getElementById('treeTableBody');
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner"></div> Загрузка дерева...</td></tr>';
+
+        try {
+            const resp = await fetch(`/api/tasks_tree?project=${encodeURIComponent(project)}`);
+            const data = await resp.json();
+            if (data.error) { throw new Error(data.error); }
+            treeDataCache = data;
+
+            if (!data.projects || !data.projects.length) {
+                tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon"><i class="bi bi-inbox"></i></div>Нет данных</div></td></tr>';
+                return;
+            }
+
+            let totalTasks = 0;
+            let html = '';
+
+            data.projects.forEach((proj, idx) => {
+                // Если несколько проектов — добавляем строку-разделитель
+                if (data.projects.length > 1) {
+                    html += `<tr class="tree-project-sep" onclick="window._treeToggleProject(${idx})">
+                        <td colspan="8">
+                            <span id="tree-proj-icon-${idx}">▼</span>
+                            ${escapeHtml(proj.name.replace('.xml', ''))}
+                            <span class="count-badge" style="margin-left:8px;">${proj.tasks_count} задач</span>
+                        </td>
+                    </tr>`;
+                }
+                html += buildTreeRows(proj.tree, proj.name, 0, '');
+                totalTasks += proj.tasks_count;
+            });
+
+            tbody.innerHTML = html;
+            document.getElementById('treeTaskCount').textContent = totalTasks;
+
+            // Заполняем currentTasks (для статистики и фильтра исполнителей)
+            currentTasks = [];
+            data.projects.forEach(proj => {
+                currentTasks = currentTasks.concat(flattenTree(proj.tree, proj.name));
+            });
+            updateExecutorFilter(currentTasks);
+            refreshStats();
+
+            showToast(`Загружено: ${totalTasks} задач (дерево)`, 'success');
+
+        } catch (e) {
+            console.error(e);
+            tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon"><i class="bi bi-exclamation-triangle"></i></div>Ошибка загрузки</div></td></tr>';
+            showToast('Ошибка загрузки дерева', 'error');
+        }
+    }
+
+    /* ---------- Сворачивание/разворачивание узлов дерева ---------- */
+    window._treeToggle = function(uid, file) {
+        const children = document.querySelectorAll(`tr.tree-row[data-tree-parent="${uid}"][data-tree-file="${file}"]`);
+        const toggle = document.querySelector(`.tree-toggle[data-tuid="${uid}"][data-tfile="${file}"]`);
+        let anyVisible = false;
+        children.forEach(r => { if (!r.classList.contains('tree-hidden')) anyVisible = true; });
+
+        if (anyVisible) {
+            _treeHideRec(uid, file);
+            if (toggle) toggle.textContent = '▶';
+        } else {
+            children.forEach(r => {
+                if (!r.classList.contains('tree-filtered-out')) r.classList.remove('tree-hidden');
+            });
+            if (toggle) toggle.textContent = '▼';
+        }
+    };
+
+    function _treeHideRec(uid, file) {
+        document.querySelectorAll(`tr.tree-row[data-tree-parent="${uid}"][data-tree-file="${file}"]`).forEach(r => {
+            r.classList.add('tree-hidden');
+            const cUid = r.dataset.treeUid;
+            if (cUid) {
+                _treeHideRec(cUid, file);
+                const t = document.querySelector(`.tree-toggle[data-tuid="${cUid}"][data-tfile="${file}"]`);
+                if (t) t.textContent = '▶';
+            }
+        });
+    }
+
+    /* ---------- Сворачивание/разворачивание проекта (при mode=all) ---------- */
+    window._treeToggleProject = function(idx) {
+        const icon = document.getElementById('tree-proj-icon-' + idx);
+        const projSepRow = icon ? icon.closest('tr') : null;
+        if (!projSepRow) return;
+        // Найдём все tree-row после этого sep до следующего sep или конца
+        let row = projSepRow.nextElementSibling;
+        const isCollapsing = (icon.textContent === '▼');
+        while (row && !row.classList.contains('tree-project-sep')) {
+            if (isCollapsing) {
+                row.classList.add('tree-hidden');
+            } else {
+                if (parseInt(row.dataset.treeLevel) === 0) row.classList.remove('tree-hidden');
+            }
+            row = row.nextElementSibling;
+        }
+        icon.textContent = isCollapsing ? '▶' : '▼';
+        if (!isCollapsing) {
+            // Сбросим toggle-кнопки внутри этого проекта
+            let r2 = projSepRow.nextElementSibling;
+            while (r2 && !r2.classList.contains('tree-project-sep')) {
+                const t = r2.querySelector('.tree-toggle');
+                if (t) t.textContent = '▶';
+                r2 = r2.nextElementSibling;
+            }
+        }
+    };
+
+    window.treeExpandAll = function() {
+        document.querySelectorAll('#treeTableBody tr.tree-row').forEach(r => {
+            if (!r.classList.contains('tree-filtered-out')) r.classList.remove('tree-hidden');
+        });
+        document.querySelectorAll('#treeTableBody .tree-toggle').forEach(t => t.textContent = '▼');
+        document.querySelectorAll('#treeTableBody .tree-project-sep [id^="tree-proj-icon-"]').forEach(i => i.textContent = '▼');
+    };
+
+    window.treeCollapseAll = function() {
+        document.querySelectorAll('#treeTableBody tr.tree-row').forEach(r => {
+            if (parseInt(r.dataset.treeLevel) > 0) r.classList.add('tree-hidden');
+        });
+        document.querySelectorAll('#treeTableBody .tree-toggle').forEach(t => t.textContent = '▶');
+    };
+
+    /* ---------- Фильтрация дерева (поиск + исполнитель) ---------- */
+    function treeApplyFilters() {
+        const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+        const fe = (document.getElementById('executorFilter')?.value || '').toLowerCase();
+
+        // Сначала снимаем все фильтры
+        document.querySelectorAll('#treeTableBody tr.tree-row').forEach(r => {
+            r.classList.remove('tree-filtered-out');
+        });
+
+        if (!q && !fe) {
+            // Без фильтров — просто восстановим состояние свёрнутости
+            treeCollapseAll();
+            return;
+        }
+
+        // Пометим все строки как отфильтрованные, потом снимем пометку с подходящих
+        const allRows = document.querySelectorAll('#treeTableBody tr.tree-row');
+        const matchedRows = new Set();
+
+        allRows.forEach(r => {
+            const name = (r.dataset.treeName || '').toLowerCase();
+            const resources = (r.dataset.treeResources || '').toLowerCase().split('|||').filter(Boolean);
+            let passSearch = !q || name.includes(q) || resources.some(res => res.includes(q));
+            let passResource = !fe || resources.some(res => res.toLowerCase() === fe);
+            if (passSearch && passResource) {
+                matchedRows.add(r);
+            }
+        });
+
+        // Для каждого совпавшего — показать всю цепочку предков
+        matchedRows.forEach(r => {
+            _showAncestors(r, matchedRows);
+        });
+
+        // Отметить НЕ-совпавшие
+        allRows.forEach(r => {
+            if (!matchedRows.has(r)) {
+                r.classList.add('tree-filtered-out', 'tree-hidden');
+            } else {
+                r.classList.remove('tree-filtered-out', 'tree-hidden');
+            }
+        });
+
+        // Раскрыть toggle-кнопки у видимых узлов с видимыми дочерними
+        document.querySelectorAll('#treeTableBody .tree-toggle').forEach(t => {
+            const uid = t.dataset.tuid;
+            const file = t.dataset.tfile;
+            const hasVisChild = document.querySelector(`tr.tree-row[data-tree-parent="${uid}"][data-tree-file="${file}"]:not(.tree-filtered-out)`);
+            t.textContent = hasVisChild ? '▼' : '▶';
+        });
+    }
+
+    function _showAncestors(row, visibleSet) {
+        const parentUid = row.dataset.treeParent;
+        const file = row.dataset.treeFile;
+        if (!parentUid) return;
+        const parentRow = document.querySelector(`tr.tree-row[data-tree-uid="${parentUid}"][data-tree-file="${file}"]`);
+        if (parentRow && !visibleSet.has(parentRow)) {
+            visibleSet.add(parentRow);
+            _showAncestors(parentRow, visibleSet);
+        }
+    }
+
+    /* ---------- Переключение вида дерево ↔ список ---------- */
+    window.activateTreeView = function() {
+        treeViewActive = true;
+        document.getElementById('viewToggleTree').classList.add('active');
+        document.getElementById('viewToggleFlat').classList.remove('active');
+        document.getElementById('treeViewContainer').style.display = '';
+        document.getElementById('flatViewContainer').style.display = 'none';
+        // Если дерево ещё пустое и есть выбранный проект — загрузить
+        if (!treeDataCache && document.getElementById('projectSelect').value) {
+            loadExecutorTasksTree();
+        }
+    };
+
+    window.activateFlatView = function() {
+        treeViewActive = false;
+        document.getElementById('viewToggleFlat').classList.add('active');
+        document.getElementById('viewToggleTree').classList.remove('active');
+        document.getElementById('flatViewContainer').style.display = '';
+        document.getElementById('treeViewContainer').style.display = 'none';
+        // Если плоский список пуст — загрузить
+        if (currentTasks.length) {
+            renderTasks();
+        }
+    };
+
+    /* ---------- Подмена кнопки «Загрузить» ---------- */
+    const origBtn = document.getElementById('loadTasksBtn');
+    if (origBtn) {
+        const newBtn = origBtn.cloneNode(true);
+        origBtn.parentNode.replaceChild(newBtn, origBtn);
+        newBtn.addEventListener('click', () => {
+            treeDataCache = null;  // сбросить кэш
+            if (treeViewActive) {
+                loadExecutorTasksTree();
+            } else {
+                loadExecutorTasks();
+            }
+        });
+    }
+
+    /* ---------- Подмена поиска и фильтра исполнителя для дерева ---------- */
+    document.getElementById('searchInput').addEventListener('input', () => {
+        if (treeViewActive) treeApplyFilters();
+    });
+    const exFilter = document.getElementById('executorFilter');
+    if (exFilter) {
+        exFilter.addEventListener('change', () => {
+            if (treeViewActive) treeApplyFilters();
+        });
+    }
+
+    /* ---------- По умолчанию: показать дерево, скрыть плоский список ---------- */
+    document.getElementById('flatViewContainer').style.display = 'none';
+    document.getElementById('treeViewContainer').style.display = '';
+
+})();
+} // end if USER_ROLE === 'executor'
+
+</script>
+</body>
+</html>
